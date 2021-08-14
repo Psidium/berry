@@ -17538,7 +17538,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["anymatch", "npm:2.0.0"],
             ["async-each", "npm:1.0.1"],
             ["braces", "npm:2.3.2"],
-            ["fsevents", "patch:fsevents@npm%3A1.2.7#~builtin<compat/fsevents>::version=1.2.7&hash=1cc4b2"],
+            ["fsevents", "patch:fsevents@npm%3A1.2.7#~builtin<compat/fsevents>::version=1.2.7&hash=b09381"],
             ["glob-parent", "npm:3.1.0"],
             ["inherits", "npm:2.0.4"],
             ["is-binary-path", "npm:1.0.1"],
@@ -17556,7 +17556,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["chokidar", "npm:3.5.1"],
             ["anymatch", "npm:3.1.1"],
             ["braces", "npm:3.0.2"],
-            ["fsevents", "patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=1cc4b2"],
+            ["fsevents", "patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=b09381"],
             ["glob-parent", "npm:5.1.2"],
             ["is-binary-path", "npm:2.1.0"],
             ["is-glob", "npm:4.0.1"],
@@ -22621,19 +22621,19 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["fsevents", [
-        ["patch:fsevents@npm%3A1.2.7#~builtin<compat/fsevents>::version=1.2.7&hash=1cc4b2", {
-          "packageLocation": "./.yarn/unplugged/fsevents-patch-166e093fda/node_modules/fsevents/",
+        ["patch:fsevents@npm%3A1.2.7#~builtin<compat/fsevents>::version=1.2.7&hash=b09381", {
+          "packageLocation": "./.yarn/unplugged/fsevents-patch-3bc7b85518/node_modules/fsevents/",
           "packageDependencies": [
-            ["fsevents", "patch:fsevents@npm%3A1.2.7#~builtin<compat/fsevents>::version=1.2.7&hash=1cc4b2"],
+            ["fsevents", "patch:fsevents@npm%3A1.2.7#~builtin<compat/fsevents>::version=1.2.7&hash=b09381"],
             ["nan", "npm:2.14.0"],
             ["node-pre-gyp", "npm:0.10.3"]
           ],
           "linkType": "HARD",
         }],
-        ["patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=1cc4b2", {
-          "packageLocation": "./.yarn/unplugged/fsevents-patch-34a78773f2/node_modules/fsevents/",
+        ["patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=b09381", {
+          "packageLocation": "./.yarn/unplugged/fsevents-patch-baa0d8c1c7/node_modules/fsevents/",
           "packageDependencies": [
-            ["fsevents", "patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=1cc4b2"],
+            ["fsevents", "patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=b09381"],
             ["node-gyp", "npm:6.0.1"]
           ],
           "linkType": "HARD",
@@ -26922,7 +26922,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/graceful-fs", "npm:4.1.3"],
             ["anymatch", "npm:3.1.1"],
             ["fb-watchman", "npm:2.0.0"],
-            ["fsevents", "patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=1cc4b2"],
+            ["fsevents", "patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=b09381"],
             ["graceful-fs", "npm:4.2.4"],
             ["jest-serializer", "npm:26.0.0"],
             ["jest-util", "npm:26.0.1"],
@@ -35185,7 +35185,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/rollup-npm-2.45.2-3c532e57ff-c049bedc19.zip/node_modules/rollup/",
           "packageDependencies": [
             ["rollup", "npm:2.45.2"],
-            ["fsevents", "patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=1cc4b2"]
+            ["fsevents", "patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=b09381"]
           ],
           "linkType": "HARD",
         }]
@@ -48679,24 +48679,23 @@ class ZipFS extends BasePortableFakeFS {
 
 
 const ZIP_FD = 0x80000000;
-const DOT_ZIP = `.zip`;
 /**
- * Extracts the archive part (ending in the first `.zip`) from a path.
+ * Extracts the archive part (ending in the first instance of `extension`) from a path.
  *
  * The indexOf-based implementation is ~3.7x faster than a RegExp-based implementation.
  */
 
-const getArchivePart = path => {
-  let idx = path.indexOf(DOT_ZIP);
+const getArchivePart = (path, extension) => {
+  let idx = path.indexOf(extension);
   if (idx <= 0) return null;
   let nextCharIdx = idx;
 
   while (idx >= 0) {
-    nextCharIdx = idx + DOT_ZIP.length;
+    nextCharIdx = idx + extension.length;
     if (path[nextCharIdx] === ppath.sep) break; // Disallow files named ".zip"
 
     if (path[idx - 1] === ppath.sep) return null;
-    idx = path.indexOf(DOT_ZIP, nextCharIdx);
+    idx = path.indexOf(extension, nextCharIdx);
   } // The path either has to end in ".zip" or contain an archive subpath (".zip/...")
 
 
@@ -48711,7 +48710,8 @@ class ZipOpenFS extends BasePortableFakeFS {
     maxOpenFiles = Infinity,
     readOnlyArchives = false,
     useCache = true,
-    maxAge = 5000
+    maxAge = 5000,
+    fileExtensions = null
   }) {
     super();
     this.fdMap = new Map();
@@ -48727,6 +48727,7 @@ class ZipOpenFS extends BasePortableFakeFS {
     this.maxOpenFiles = maxOpenFiles;
     this.readOnlyArchives = readOnlyArchives;
     this.maxAge = maxAge;
+    this.fileExtensions = fileExtensions;
   }
 
   static async openPromise(fn, opts) {
@@ -49566,7 +49567,21 @@ class ZipOpenFS extends BasePortableFakeFS {
     let filePath = ``;
 
     while (true) {
-      const archivePart = getArchivePart(p.substr(filePath.length));
+      const pathPartWithArchive = p.substr(filePath.length);
+      let archivePart;
+
+      if (!this.fileExtensions) {
+        archivePart = getArchivePart(pathPartWithArchive, `.zip`);
+      } else {
+        for (const ext of this.fileExtensions) {
+          archivePart = getArchivePart(pathPartWithArchive, ext);
+
+          if (archivePart) {
+            break;
+          }
+        }
+      }
+
       if (!archivePart) return null;
       filePath = this.pathUtils.join(filePath, archivePart);
 
@@ -49578,7 +49593,7 @@ class ZipOpenFS extends BasePortableFakeFS {
             this.notZip.add(filePath);
             continue;
           }
-        } catch (_a) {
+        } catch {
           return null;
         }
 
